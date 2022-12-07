@@ -10,7 +10,7 @@
 
 ## Usage
 
--   因为使用selenium库中的Edge Driver, 因此需要安装Edge与相应版本的WebDriver并配置环境变量
+-   因为使用selenium库中的Edge Driver, 所以需要安装Edge与相应版本的WebDriver并配置环境变量
 
 -   ```bash
     git clone https://github.com/UltramarineW/RongYouXueTang-Automation-Script.git
