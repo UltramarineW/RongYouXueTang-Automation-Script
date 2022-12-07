@@ -10,19 +10,23 @@
 
 ## Usage
 
--   因为使用selenium库中的Edge Driver, 所以需要安装Edge与相应版本的WebDriver并配置环境变量
+1.   因为使用selenium库中的Edge Driver, 所以需要安装Edge与相应版本的WebDriver并配置环境变量
 
--   ```bash
-    git clone https://github.com/UltramarineW/RongYouXueTang-Automation-Script.git
-    cd RongYouXueTang-Automation-Script
-    pip install tqdm selenium ddddocr
-    ```
+2.   将repo clone到本地并安装依赖库
 
-    -   编辑`main.py` 更改其中的username与password
+```bash
+git clone https://github.com/UltramarineW/RongYouXueTang-Automation-Script.git
+cd RongYouXueTang-Automation-Script
+pip install tqdm selenium ddddocr
+```
+    
+3.  编辑`main.py` 更改其中的username与password
 
-    ```bash
-    python main.py
-    ```
+4. 在terminal中运行脚本
+
+```bash
+python main.py
+```
 
     
 
