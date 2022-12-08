@@ -13,10 +13,12 @@ import ddddocr
 username = ''
 password = ''
 debug = 0
+already_learned_course = []
 
 # setup driver
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
+options.add_argument("--mute-audio")
 driver = webdriver.Edge(options=options)
 driver.maximize_window()
 
@@ -41,12 +43,12 @@ def handleCaptcha():
                 counter += 1
                 print(e)
                 continue
-            ocr = ddddocr.DdddOcr()
+            ocr = ddddocr.DdddOcr(show_ad=False)
             with open('./save.png', 'rb') as f:
                 img_bytes = f.read()
                 res = ocr.classification(img_bytes)
             f.close()
-            print(res)
+            print(f'验证码:{res}')
             driver.find_element(By.ID, 'userYzm').send_keys(res)
             driver.find_element(By.ID, 'login').click()
             counter = counter + 1
@@ -95,14 +97,24 @@ def getContent():
 def playVideo(course):
     try:
         sleep(2)
-        print('Current learning ', course.text)
+        print('\n')
+        print('Current learning ', course.text.replace('\n', ' '))
         tag = course.find_element(By.TAG_NAME, 'a')
         tag.click()
         sleep(2)
 
         iframe_node = driver.find_element(By.NAME, 'zwshow')
         driver.switch_to.frame(iframe_node)
-        print('success switch to the frame')
+        if debug:
+            print('success switch to the frame')
+
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'sp_index_1'))
+        )
+        tag = driver.find_element(By.ID, 'sp_index_1')
+        if tag.text == '已完成':
+            print('本节课已学完')
+            return
 
         # 点击视频封面中的开始图片
         WebDriverWait(driver, 10).until(
@@ -157,13 +169,6 @@ def chooseCourse(course_list):
     learning = []
 
     for course in course_list:
-        # 跳过带有测试的课程
-        if '测试' in course.text:
-            learning.append(course)
-            if debug:
-                print('-')
-            continue
-
         # 学习过的课程
         if judgeExist(course, By.ID, 'a'):
             already_learned.append(course)
@@ -179,6 +184,7 @@ def chooseCourse(course_list):
             learning.append(course)
             if debug:
                 print('-')
+    print(f'共有{len(not_learned)}门还未学习的课程, 共有{len(already_learned)}门已经学习的课程')
     return not_learned
 
 
@@ -189,8 +195,15 @@ def startPlay():
             not_learned = chooseCourse(course_list)
             if len(not_learned) == 0:
                 break
-            playVideo(not_learned[0])
-            print('hit')
+            for course in not_learned:
+                if course.text not in already_learned_course:
+                    already_learned_course.append(course.text)
+                    if debug:
+                        print(already_learned_course)
+                    playVideo(course)
+                    break
+            if debug:
+                print('hit')
             driver.refresh()
 
     except Exception as e:
@@ -205,6 +218,7 @@ if __name__ == '__main__':
     driver.find_element(By.CLASS_NAME, 'header-dengl').click()
     loginAccount()
     login_time_end = time.time()
+    print('成功登录')
     print(f'Login time:{login_time_end - login_time_start}s')
 
     # Find course
