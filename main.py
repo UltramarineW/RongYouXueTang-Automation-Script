@@ -61,10 +61,10 @@ def handleCaptcha():
 
 
 def loginAccount():
-    sleep(2)
     if username == '' or password == '':
         print('请编辑main.py文件并输入对应的账号和密码')
         exit(-1)
+    sleep(1)
     driver.find_element(By.ID, 'usercode').send_keys(username)
     driver.find_element(By.ID, 'password').send_keys(password)
     handleCaptcha()
@@ -96,8 +96,7 @@ def getContent():
 
 def playVideo(course):
     try:
-        sleep(2)
-        print('\n')
+        print()
         print('Current learning ', course.text.replace('\n', ' '))
         tag = course.find_element(By.TAG_NAME, 'a')
         tag.click()
@@ -114,7 +113,7 @@ def playVideo(course):
         tag = driver.find_element(By.ID, 'sp_index_1')
         if tag.text == '已完成':
             print('本节课已学完')
-            return
+            return True
 
         # 点击视频封面中的开始图片
         WebDriverWait(driver, 10).until(
@@ -148,10 +147,13 @@ def playVideo(course):
 
         tag = driver.find_element(By.ID, 'sp_index_1')
         print(tag.text)
+        already_learned_course.append(course.text)
+        return True
 
     except Exception as e:
         print("播放视频失败")
         print(e)
+        return False
 
 
 def judgeExist(element, by, value):
@@ -176,6 +178,9 @@ def chooseCourse(course_list):
                 print('*')
         # 没有学习过的课程
         elif judgeExist(course, By.ID, 'r'):
+            if course.text in already_learned_course:
+                already_learned.append(course)
+                continue
             not_learned.append(course)
             if debug:
                 print('o')
@@ -193,17 +198,16 @@ def startPlay():
         while True:
             course_list = getContent()
             not_learned = chooseCourse(course_list)
+            course_name = not_learned[0].text
             if len(not_learned) == 0:
                 break
-            for course in not_learned:
-                if course.text not in already_learned_course:
-                    already_learned_course.append(course.text)
-                    if debug:
-                        print(already_learned_course)
-                    playVideo(course)
-                    break
+            played = playVideo(not_learned[0])
+            if debug:
+                print(already_learned_course)
             if debug:
                 print('hit')
+            if played:
+                already_learned_course.append(course_name)
             driver.refresh()
 
     except Exception as e:
